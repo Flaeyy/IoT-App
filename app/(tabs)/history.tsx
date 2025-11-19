@@ -1,6 +1,6 @@
-import React from 'react';
-import { View, Text, StyleSheet, ScrollView, StatusBar } from 'react-native';
 import { IconSymbol } from '@/components/ui/icon-symbol';
+import React from 'react';
+import { ScrollView, StatusBar, StyleSheet, Text, View } from 'react-native';
 
 interface HistoryEvent {
   id: string;
@@ -14,37 +14,37 @@ const historyData: HistoryEvent[] = [
   {
     id: '1',
     type: 'disarmed',
-    message: 'System disarmed',
+    message: 'Sistema desarmado',
     timestamp: '10:30 AM',
-    date: 'Today',
+    date: 'Hoy',
   },
   {
     id: '2',
     type: 'armed',
-    message: 'System armed',
+    message: 'Sistema armado',
     timestamp: '9:15 AM',
-    date: 'Today',
+    date: 'Hoy',
   },
   {
     id: '3',
     type: 'alert',
-    message: 'Motion detected',
+    message: 'Movimiento detectado',
     timestamp: '11:45 PM',
-    date: 'Yesterday',
+    date: 'Ayer',
   },
   {
     id: '4',
     type: 'disarmed',
-    message: 'System disarmed',
+    message: 'Sistema desarmado',
     timestamp: '6:20 PM',
-    date: 'Yesterday',
+    date: 'Ayer',
   },
   {
     id: '5',
     type: 'armed',
-    message: 'System armed',
+    message: 'Sistema armado',
     timestamp: '8:00 AM',
-    date: 'Yesterday',
+    date: 'Ayer',
   },
 ];
 

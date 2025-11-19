@@ -35,7 +35,7 @@ export default function AlarmScreen() {
         </View>
         
         <Text style={styles.statusText}>
-          {isArmed ? 'Armed' : 'Disarmed'}
+          {isArmed ? 'Encendida' : 'Apagada'}
         </Text>
       </View>
 
@@ -45,7 +45,7 @@ export default function AlarmScreen() {
           onPress={handleArm}
           activeOpacity={0.8}
         >
-          <Text style={styles.buttonText}>Endener</Text>
+          <Text style={styles.buttonText}>Encender</Text>
         </TouchableOpacity>
 
         <TouchableOpacity 
