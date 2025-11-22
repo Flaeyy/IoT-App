@@ -1,18 +1,18 @@
+import { IconSymbol } from '@/components/ui/icon-symbol';
+import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import React, { useState } from 'react';
 import {
     Alert,
     KeyboardAvoidingView,
     Platform,
+    StatusBar,
     StyleSheet,
     Text,
     TextInput,
     TouchableOpacity,
     View,
-    StatusBar,
 } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
-import { IconSymbol } from '@/components/ui/icon-symbol';
 
 export default function LoginScreen() {
   const [email, setEmail] = useState('');
@@ -36,10 +36,10 @@ export default function LoginScreen() {
     <View style={styles.container}>
       <StatusBar barStyle="light-content" />
       <LinearGradient
-        colors={['#0A4D68', '#088395', '#05BFDB']}
+        colors={['#0B3D5C', '#1565A0', '#0D7AB8']}
         style={styles.gradient}
         start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}>
+        end={{ x: 0.5, y: 1 }}>
         
         <KeyboardAvoidingView
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}

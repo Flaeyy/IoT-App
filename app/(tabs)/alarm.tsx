@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, StatusBar } from 'react-native';
 import { IconSymbol } from '@/components/ui/icon-symbol';
+import { LinearGradient } from 'expo-linear-gradient';
+import React, { useState } from 'react';
+import { StatusBar, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 type AlarmStatus = 'armed' | 'disarmed';
 
@@ -18,20 +19,22 @@ export default function AlarmScreen() {
   const isArmed = status === 'armed';
 
   return (
-    <View style={styles.container}>
+    <LinearGradient
+      colors={['#0B3D5C', '#1565A0', '#0D7AB8']}
+      style={styles.container}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 0.5, y: 1 }}>
       <StatusBar barStyle="light-content" />
       
       <Text style={styles.title}>Alarma</Text>
 
       <View style={styles.statusContainer}>
-        <View style={[styles.shieldBackground, isArmed && styles.shieldBackgroundArmed]}>
-          <View style={styles.shieldIconContainer}>
-            <IconSymbol 
-              name={isArmed ? "lock.shield.fill" : "checkmark.shield.fill"} 
-              size={120} 
-              color="#FFFFFF" 
-            />
-          </View>
+        <View style={styles.shieldBackground}>
+          <IconSymbol 
+            name={isArmed ? "lock.shield.fill" : "checkmark.shield.fill"} 
+            size={90} 
+            color="#FFFFFF" 
+          />
         </View>
         
         <Text style={styles.statusText}>
@@ -41,92 +44,93 @@ export default function AlarmScreen() {
 
       <View style={styles.buttonsContainer}>
         <TouchableOpacity 
-          style={[styles.button, styles.armButton]}
+          style={styles.button}
           onPress={handleArm}
-          activeOpacity={0.8}
+          activeOpacity={0.7}
         >
           <Text style={styles.buttonText}>Encender</Text>
         </TouchableOpacity>
 
         <TouchableOpacity 
-          style={[styles.button, styles.disarmButton]}
+          style={styles.button}
           onPress={handleDisarm}
-          activeOpacity={0.8}
+          activeOpacity={0.7}
         >
           <Text style={styles.buttonText}>Apagar</Text>
         </TouchableOpacity>
       </View>
-    </View>
+    </LinearGradient>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#5B9BC4',
     alignItems: 'center',
     paddingTop: 60,
+    paddingBottom: 40,
   },
   title: {
-    fontSize: 32,
+    fontSize: 40,
     fontWeight: '600',
     color: '#FFFFFF',
     marginBottom: 60,
+    letterSpacing: 0.5,
   },
   statusContainer: {
     alignItems: 'center',
+    flex: 1,
+    justifyContent: 'center',
     marginBottom: 80,
   },
   shieldBackground: {
-    width: 280,
-    height: 280,
-    borderRadius: 140,
+    width: 320,
+    height: 320,
+    borderRadius: 160,
     backgroundColor: 'rgba(255, 255, 255, 0.15)',
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 30,
-  },
-  shieldBackgroundArmed: {
-    backgroundColor: 'rgba(220, 53, 69, 0.2)',
-  },
-  shieldIconContainer: {
-    justifyContent: 'center',
-    alignItems: 'center',
+    marginBottom: 60,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 8,
+    },
+    shadowOpacity: 0.2,
+    shadowRadius: 10,
+    elevation: 5,
   },
   statusText: {
-    fontSize: 36,
-    fontWeight: '600',
+    fontSize: 44,
+    fontWeight: '700',
     color: '#FFFFFF',
+    letterSpacing: 0.5,
   },
   buttonsContainer: {
     width: '100%',
-    paddingHorizontal: 40,
+    paddingHorizontal: 35,
     gap: 20,
   },
   button: {
     width: '100%',
-    height: 70,
-    borderRadius: 35,
+    height: 68,
+    borderRadius: 34,
     justifyContent: 'center',
     alignItems: 'center',
+    backgroundColor: 'rgba(8, 48, 78, 0.8)',
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
       height: 4,
     },
-    shadowOpacity: 0.3,
-    shadowRadius: 5,
-    elevation: 8,
-  },
-  armButton: {
-    backgroundColor: '#1E4D6B',
-  },
-  disarmButton: {
-    backgroundColor: '#1E4D6B',
+    shadowOpacity: 0.4,
+    shadowRadius: 8,
+    elevation: 10,
   },
   buttonText: {
-    fontSize: 24,
-    fontWeight: '600',
+    fontSize: 28,
+    fontWeight: '700',
     color: '#FFFFFF',
+    letterSpacing: 0.5,
   },
 });

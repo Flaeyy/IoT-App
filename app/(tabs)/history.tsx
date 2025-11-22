@@ -1,4 +1,5 @@
 import { IconSymbol } from '@/components/ui/icon-symbol';
+import { LinearGradient } from 'expo-linear-gradient';
 import React from 'react';
 import { ScrollView, StatusBar, StyleSheet, Text, View } from 'react-native';
 
@@ -76,7 +77,11 @@ export default function HistoryScreen() {
   };
 
   return (
-    <View style={styles.container}>
+    <LinearGradient
+      colors={['#0B3D5C', '#1565A0', '#0D7AB8']}
+      style={styles.container}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 0.5, y: 1 }}>
       <StatusBar barStyle="light-content" />
       
       <Text style={styles.title}>Historial</Text>
@@ -109,14 +114,13 @@ export default function HistoryScreen() {
           </View>
         ))}
       </ScrollView>
-    </View>
+    </LinearGradient>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#5B9BC4',
     paddingTop: 60,
   },
   title: {

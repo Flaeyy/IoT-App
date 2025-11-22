@@ -1,7 +1,7 @@
-import React from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Switch, StatusBar, Alert } from 'react-native';
 import { IconSymbol } from '@/components/ui/icon-symbol';
-import { useState } from 'react';
+import { LinearGradient } from 'expo-linear-gradient';
+import React, { useState } from 'react';
+import { Alert, ScrollView, StatusBar, StyleSheet, Switch, Text, TouchableOpacity, View } from 'react-native';
 import { router } from 'expo-router';
 
 export default function SettingsScreen() {
@@ -30,7 +30,11 @@ export default function SettingsScreen() {
   };
 
   return (
-    <View style={styles.container}>
+    <LinearGradient
+      colors={['#0B3D5C', '#1565A0', '#0D7AB8']}
+      style={styles.container}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 0.5, y: 1 }}>
       <StatusBar barStyle="light-content" />
       
       <Text style={styles.title}>Configuracion</Text>
@@ -144,14 +148,13 @@ export default function SettingsScreen() {
           </TouchableOpacity>
         </View>
       </ScrollView>
-    </View>
+    </LinearGradient>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#5B9BC4',
     paddingTop: 60,
   },
   title: {
