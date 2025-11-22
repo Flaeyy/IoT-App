@@ -1,12 +1,33 @@
 import React from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Switch, StatusBar } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Switch, StatusBar, Alert } from 'react-native';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { useState } from 'react';
+import { router } from 'expo-router';
 
 export default function SettingsScreen() {
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   const [soundEnabled, setSoundEnabled] = useState(true);
   const [autoArmEnabled, setAutoArmEnabled] = useState(false);
+
+  const handleLogout = () => {
+    Alert.alert(
+      'Cerrar sesión',
+      '¿Estás seguro que deseas cerrar sesión?',
+      [
+        {
+          text: 'Cancelar',
+          style: 'cancel',
+        },
+        {
+          text: 'Cerrar sesión',
+          style: 'destructive',
+          onPress: () => {
+            router.replace('/login');
+          },
+        },
+      ]
+    );
+  };
 
   return (
     <View style={styles.container}>
@@ -111,6 +132,17 @@ export default function SettingsScreen() {
             <IconSymbol name="chevron.right" size={20} color="#FFFFFF" />
           </TouchableOpacity>
         </View>
+
+        <View style={styles.section}>
+          <TouchableOpacity 
+            style={styles.logoutButton} 
+            activeOpacity={0.7}
+            onPress={handleLogout}
+          >
+            <IconSymbol name="arrow.right.square.fill" size={24} color="#FFFFFF" />
+            <Text style={styles.logoutText}>Cerrar Sesión</Text>
+          </TouchableOpacity>
+        </View>
       </ScrollView>
     </View>
   );
@@ -174,5 +206,20 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: '#FFFFFF',
     opacity: 0.7,
+  },
+  logoutButton: {
+    flexDirection: 'row',
+    backgroundColor: 'rgba(255, 59, 48, 0.8)',
+    borderRadius: 15,
+    padding: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 10,
+  },
+  logoutText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#FFFFFF',
+    marginLeft: 10,
   },
 });
