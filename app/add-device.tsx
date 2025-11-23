@@ -10,50 +10,77 @@ import {
   StatusBar,
   Alert,
   ScrollView,
+  ActivityIndicator,
 } from 'react-native';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
+import { deviceService } from '@/services/devices/deviceService';
 
 export default function AddDeviceScreen() {
   const [deviceName, setDeviceName] = useState('');
-  const [wifiSSID, setWifiSSID] = useState('');
-  const [wifiPassword, setWifiPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
+  const [macAddress, setMacAddress] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleAddDevice = () => {
+  const formatMacAddress = (text: string) => {
+    // Remover caracteres no válidos
+    const cleaned = text.replace(/[^A-Fa-f0-9]/g, '').toUpperCase();
+    
+    // Agregar : cada 2 caracteres
+    const formatted = cleaned.match(/.{1,2}/g)?.join(':') || cleaned;
+    
+    // Limitar a 17 caracteres (formato XX:XX:XX:XX:XX:XX)
+    return formatted.substring(0, 17);
+  };
+
+  const handleMacAddressChange = (text: string) => {
+    const formatted = formatMacAddress(text);
+    setMacAddress(formatted);
+  };
+
+  const handleAddDevice = async () => {
     // Validaciones
     if (!deviceName.trim()) {
       Alert.alert('Error', 'Por favor ingresa un nombre para el dispositivo');
       return;
     }
 
-    if (!wifiSSID.trim()) {
-      Alert.alert('Error', 'Por favor ingresa el nombre de tu red WiFi');
+    if (!macAddress.trim()) {
+      Alert.alert('Error', 'Por favor ingresa la dirección MAC del ESP32');
       return;
     }
 
-    if (!wifiPassword.trim()) {
-      Alert.alert('Error', 'Por favor ingresa la contraseña de tu red WiFi');
+    // Validar formato de MAC (XX:XX:XX:XX:XX:XX)
+    const macRegex = /^([0-9A-F]{2}:){5}[0-9A-F]{2}$/;
+    if (!macRegex.test(macAddress)) {
+      Alert.alert('Error', 'La dirección MAC debe tener el formato XX:XX:XX:XX:XX:XX');
       return;
     }
 
-    if (wifiPassword.length < 8) {
-      Alert.alert('Error', 'La contraseña WiFi debe tener al menos 8 caracteres');
-      return;
-    }
+    try {
+      setIsLoading(true);
+      
+      // Registrar dispositivo en el backend
+      await deviceService.registerDevice({
+        macAddress: macAddress,
+        name: deviceName,
+      });
 
-    // Simulación de agregar dispositivo
-    Alert.alert(
-      'Dispositivo Agregado',
-      `Se ha configurado "${deviceName}" correctamente.\n\nConecta tu ESP32 y espera a que se vincule con tu red WiFi.`,
-      [
-        {
-          text: 'OK',
-          onPress: () => router.back(),
-        },
-      ]
-    );
+      Alert.alert(
+        'Dispositivo Agregado',
+        `"${deviceName}" se ha registrado exitosamente.\n\nAhora aparecerá en tu lista de dispositivos.`,
+        [
+          {
+            text: 'OK',
+            onPress: () => router.back(),
+          },
+        ]
+      );
+    } catch (error: any) {
+      Alert.alert('Error', error.message || 'No se pudo agregar el dispositivo');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleCancel = () => {
@@ -114,7 +141,7 @@ export default function AddDeviceScreen() {
                   />
                   <TextInput
                     style={styles.input}
-                    placeholder="Ej: Puerta Cocina, Cuarto, Sala"
+                    placeholder="Ej: Puerta Principal, Cocina, Cuarto"
                     placeholderTextColor="rgba(255, 255, 255, 0.5)"
                     value={deviceName}
                     onChangeText={setDeviceName}
@@ -126,59 +153,33 @@ export default function AddDeviceScreen() {
                 </Text>
               </View>
 
-              {/* Configuración WiFi */}
+              {/* Dirección MAC */}
               <View style={styles.section}>
                 <Text style={styles.sectionTitle}>
-                  <IconSymbol name="wifi" size={16} color="#FFFFFF" />{' '}
-                  Configuración WiFi
+                  <IconSymbol name="cpu.fill" size={16} color="#FFFFFF" />{' '}
+                  Dirección MAC del ESP32
                 </Text>
                 
                 <View style={styles.inputContainer}>
                   <IconSymbol 
-                    name="network" 
+                    name="barcode" 
                     size={20} 
                     color="#FFFFFF" 
                     style={styles.inputIcon} 
                   />
                   <TextInput
                     style={styles.input}
-                    placeholder="Nombre de tu red WiFi (SSID)"
+                    placeholder="XX:XX:XX:XX:XX:XX"
                     placeholderTextColor="rgba(255, 255, 255, 0.5)"
-                    value={wifiSSID}
-                    onChangeText={setWifiSSID}
-                    autoCapitalize="none"
+                    value={macAddress}
+                    onChangeText={handleMacAddressChange}
+                    autoCapitalize="characters"
+                    maxLength={17}
                   />
-                </View>
-
-                <View style={styles.inputContainer}>
-                  <IconSymbol 
-                    name="lock.fill" 
-                    size={20} 
-                    color="#FFFFFF" 
-                    style={styles.inputIcon} 
-                  />
-                  <TextInput
-                    style={[styles.input, styles.passwordInput]}
-                    placeholder="Contraseña de tu WiFi"
-                    placeholderTextColor="rgba(255, 255, 255, 0.5)"
-                    value={wifiPassword}
-                    onChangeText={setWifiPassword}
-                    secureTextEntry={!showPassword}
-                    autoCapitalize="none"
-                  />
-                  <TouchableOpacity 
-                    onPress={() => setShowPassword(!showPassword)}
-                    style={styles.eyeIcon}>
-                    <IconSymbol 
-                      name={showPassword ? "eye.fill" : "eye.slash.fill"} 
-                      size={20} 
-                      color="rgba(255, 255, 255, 0.7)" 
-                    />
-                  </TouchableOpacity>
                 </View>
                 
                 <Text style={styles.helperText}>
-                  Tu ESP32 usará estos datos para conectarse a Internet
+                  Encuentra la MAC en la etiqueta del ESP32 o en el monitor serial
                 </Text>
               </View>
 
@@ -190,8 +191,8 @@ export default function AddDeviceScreen() {
                 </View>
                 <Text style={styles.instructionText}>
                   1. Conecta tu ESP32 a la corriente{'\n'}
-                  2. Espera a que el LED parpadee{'\n'}
-                  3. El dispositivo se conectará automáticamente
+                  2. Verifica que el LED encienda{'\n'}
+                  3. El dispositivo aparecerá en tu lista
                 </Text>
               </View>
 
@@ -200,8 +201,13 @@ export default function AddDeviceScreen() {
                 <TouchableOpacity
                   style={styles.button}
                   onPress={handleAddDevice}
+                  disabled={isLoading}
                   activeOpacity={0.8}>
-                  <Text style={styles.buttonText}>Agregar Dispositivo</Text>
+                  {isLoading ? (
+                    <ActivityIndicator color="#0A4D68" size="small" />
+                  ) : (
+                    <Text style={styles.buttonText}>Agregar Dispositivo</Text>
+                  )}
                 </TouchableOpacity>
 
                 <TouchableOpacity
@@ -298,14 +304,6 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: 15,
     height: '100%',
-  },
-  passwordInput: {
-    paddingRight: 40,
-  },
-  eyeIcon: {
-    position: 'absolute',
-    right: 15,
-    padding: 5,
   },
   helperText: {
     fontSize: 13,
