@@ -1,7 +1,7 @@
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     Alert,
     KeyboardAvoidingView,
@@ -13,7 +13,9 @@ import {
     TextInput,
     TouchableOpacity,
     View,
+    ActivityIndicator,
 } from 'react-native';
+import { useAuth } from '@/hooks/auth';
 
 export default function RegisterScreen() {
   const [name, setName] = useState('');
@@ -24,7 +26,16 @@ export default function RegisterScreen() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-  const handleRegister = () => {
+  const { register, isLoading, isAuthenticated } = useAuth();
+
+  // Redirigir si ya está autenticado
+  useEffect(() => {
+    if (isAuthenticated) {
+      router.replace('/(tabs)/alarm');
+    }
+  }, [isAuthenticated]);
+
+  const handleRegister = async () => {
     if (!name || !username || !email || !password || !confirmPassword) {
       Alert.alert('Error', 'Por favor completa todos los campos');
       return;
@@ -45,16 +56,14 @@ export default function RegisterScreen() {
       return;
     }
 
-    Alert.alert(
-      'Registro exitoso',
-      '¡Tu cuenta ha sido creada!',
-      [
-        {
-          text: 'OK',
-          onPress: () => router.replace('/login'),
-        },
-      ]
-    );
+    const result = await register(name, username, email, password);
+    
+    if (result.success) {
+      // Navegación automática, el useEffect se encargará de redirigir
+      // cuando isAuthenticated cambie a true
+    } else {
+      Alert.alert('Error', result.error || 'No se pudo registrar el usuario');
+    }
   };
 
   return (
@@ -174,8 +183,13 @@ export default function RegisterScreen() {
               <TouchableOpacity
                 style={styles.button}
                 onPress={handleRegister}
+                disabled={isLoading}
                 activeOpacity={0.8}>
-                <Text style={styles.buttonText}>Registrarse</Text>
+                {isLoading ? (
+                  <ActivityIndicator color="#0A4D68" size="small" />
+                ) : (
+                  <Text style={styles.buttonText}>Registrarse</Text>
+                )}
               </TouchableOpacity>
 
               <TouchableOpacity
