@@ -1,7 +1,7 @@
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     Alert,
     KeyboardAvoidingView,
@@ -12,23 +12,50 @@ import {
     TextInput,
     TouchableOpacity,
     View,
+    ActivityIndicator,
 } from 'react-native';
+import { useAuth } from '@/hooks/auth';
 
 export default function LoginScreen() {
-  const [email, setEmail] = useState('');
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  
+  const { login, isLoading, isAuthenticated } = useAuth();
 
-  const handleLogin = () => {
-    if (!email || !password) {
-      Alert.alert('Error', 'Por favor ingresa tu correo y contraseña');
+  // Redirigir si ya está autenticado
+  useEffect(() => {
+    if (isAuthenticated) {
+      router.replace('/(tabs)/alarm');
+    }
+  }, [isAuthenticated]);
+
+  const handleLogin = async () => {
+    console.log('🔵 Iniciando login desde UI');
+    
+    if (!username || !password) {
+      Alert.alert('Error', 'Por favor ingresa tu usuario y contraseña');
       return;
     }
 
-    if (email.includes('@') && password.length >= 6) {
-      router.replace('/(tabs)/alarm');
+    if (password.length < 6) {
+      Alert.alert('Error', 'La contraseña debe tener al menos 6 caracteres');
+      return;
+    }
+
+    console.log('🔵 Llamando a función login con:', { username, passwordLength: password.length });
+    
+    const result = await login(username, password);
+    
+    console.log('🔵 Resultado del login:', result);
+    
+    if (result.success) {
+      console.log('✅ Login exitoso, usuario:', result.user);
+      // Navegación automática, el useEffect se encargará de redirigir
+      // cuando isAuthenticated cambie a true
     } else {
-      Alert.alert('Error', 'Correo o contraseña inválidos');
+      console.error('❌ Error en login:', result.error);
+      Alert.alert('Error', result.error || 'No se pudo iniciar sesión');
     }
   };
 
@@ -57,16 +84,15 @@ export default function LoginScreen() {
           {/* Formulario */}
           <View style={styles.formContainer}>
             <View style={styles.inputContainer}>
-              <IconSymbol name="envelope.fill" size={20} color="#FFFFFF" style={styles.inputIcon} />
+              <IconSymbol name="person.fill" size={20} color="#FFFFFF" style={styles.inputIcon} />
               <TextInput
                 style={styles.input}
-                placeholder="Correo electrónico"
+                placeholder="Usuario"
                 placeholderTextColor="rgba(255, 255, 255, 0.6)"
-                value={email}
-                onChangeText={setEmail}
-                keyboardType="email-address"
+                value={username}
+                onChangeText={setUsername}
                 autoCapitalize="none"
-                autoComplete="email"
+                autoComplete="username"
               />
             </View>
 
@@ -96,8 +122,13 @@ export default function LoginScreen() {
             <TouchableOpacity
               style={styles.button}
               onPress={handleLogin}
+              disabled={isLoading}
               activeOpacity={0.8}>
-              <Text style={styles.buttonText}>Iniciar Sesión</Text>
+              {isLoading ? (
+                <ActivityIndicator color="#0A4D68" size="small" />
+              ) : (
+                <Text style={styles.buttonText}>Iniciar Sesión</Text>
+              )}
             </TouchableOpacity>
 
             <TouchableOpacity
