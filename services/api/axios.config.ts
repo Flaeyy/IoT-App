@@ -80,8 +80,12 @@ apiClient.interceptors.response.use(
       AppLogger.error('Error de red o servidor no disponible', error.message);
     }
 
-    // Si el error es 401 y no se ha intentado refrescar el token
-    if (error.response?.status === 401 && !originalRequest._retry) {
+    // Rutas que NO deben intentar refrescar el token
+    const noRefreshUrls = ['/auth/login', '/auth/register', '/auth/refresh', '/auth/check-token'];
+    const isNoRefreshUrl = noRefreshUrls.some(url => originalRequest.url?.includes(url));
+
+    // Si el error es 401 y no es una ruta de autenticación
+    if (error.response?.status === 401 && !originalRequest._retry && !isNoRefreshUrl) {
       if (isRefreshing) {
         AppLogger.debug('Ya se está refrescando el token, agregando a la cola');
         // Si ya se está refrescando, agregar la petición a la cola
