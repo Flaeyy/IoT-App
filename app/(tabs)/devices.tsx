@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
@@ -7,55 +7,74 @@ import {
   ScrollView,
   StatusBar,
   Alert,
+  RefreshControl,
+  ActivityIndicator,
 } from 'react-native';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { LinearGradient } from 'expo-linear-gradient';
-import { router } from 'expo-router';
-
-interface Device {
-  id: string;
-  name: string;
-  status: 'online' | 'offline';
-  location: string;
-}
-
-// Datos estáticos de dispositivos
-const MOCK_DEVICES: Device[] = [
-  {
-    id: '1',
-    name: 'ESP32 Puerta Principal',
-    status: 'online',
-    location: 'Entrada',
-  },
-  {
-    id: '2',
-    name: 'ESP32 Cocina',
-    status: 'online',
-    location: 'Cocina',
-  },
-  {
-    id: '3',
-    name: 'ESP32 Cuarto',
-    status: 'offline',
-    location: 'Habitación',
-  },
-];
+import { router, useFocusEffect } from 'expo-router';
+import { deviceService } from '@/services/devices/deviceService';
+import type { DeviceResponse } from '@/services/devices/device.types';
 
 export default function DevicesScreen() {
-  const [devices, setDevices] = useState<Device[]>(MOCK_DEVICES);
+  const [devices, setDevices] = useState<DeviceResponse[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+
+  const loadDevices = async () => {
+    try {
+      const userDevices = await deviceService.getUserDevices();
+      setDevices(userDevices);
+    } catch (error: any) {
+      Alert.alert('Error', 'No se pudieron cargar los dispositivos');
+      console.error('Error loading devices:', error);
+    } finally {
+      setIsLoading(false);
+      setRefreshing(false);
+    }
+  };
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await loadDevices();
+  };
+
+  // Cargar dispositivos al montar y cada vez que la pantalla gane foco
+  useFocusEffect(
+    useCallback(() => {
+      loadDevices();
+    }, [])
+  );
 
   const handleAddDevice = () => {
     router.push('/add-device');
   };
 
-  const handleDevicePress = (device: Device) => {
-    if (device.status === 'offline') {
-      Alert.alert('Dispositivo sin conexión', `${device.name} está desconectado`);
+  const handleDevicePress = (device: DeviceResponse) => {
+    if (!device.isActive) {
+      Alert.alert('Dispositivo sin conexión', `${device.name || 'ESP32'} está desconectado`);
     } else {
       // Navegar a las pantallas de alarma/control del dispositivo
       router.push('/alarm');
     }
   };
+
+  if (isLoading) {
+    return (
+      <View style={styles.container}>
+        <LinearGradient
+          colors={['#0B3D5C', '#1565A0', '#0D7AB8']}
+          style={styles.gradient}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 0.5, y: 1 }}>
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="large" color="#FFFFFF" />
+            <Text style={styles.loadingText}>Cargando dispositivos...</Text>
+          </View>
+        </LinearGradient>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
@@ -85,7 +104,15 @@ export default function DevicesScreen() {
         <ScrollView
           style={styles.scrollView}
           contentContainerStyle={styles.scrollContent}
-          showsVerticalScrollIndicator={false}>
+          showsVerticalScrollIndicator={false}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+              tintColor="#FFFFFF"
+              colors={['#FFFFFF']}
+            />
+          }>
           
           {devices.length === 0 ? (
             <View style={styles.emptyContainer}>
@@ -107,7 +134,7 @@ export default function DevicesScreen() {
                   {/* Indicador de estado */}
                   <View style={[
                     styles.statusIndicator,
-                    device.status === 'online' ? styles.statusOnline : styles.statusOffline
+                    device.isActive ? styles.statusOnline : styles.statusOffline
                   ]} />
                   
                   {/* Icono del dispositivo */}
@@ -122,21 +149,23 @@ export default function DevicesScreen() {
                   {/* Información del dispositivo */}
                   <View style={styles.deviceInfo}>
                     <Text style={styles.deviceName} numberOfLines={2}>
-                      {device.name}
+                      {device.name || 'ESP32'}
                     </Text>
                     <View style={styles.deviceDetails}>
                       <IconSymbol 
-                        name="location.fill" 
+                        name="barcode" 
                         size={14} 
                         color="rgba(255, 255, 255, 0.7)" 
                       />
-                      <Text style={styles.deviceLocation}>{device.location}</Text>
+                      <Text style={styles.deviceLocation}>
+                        {device.macAddress.substring(9)}
+                      </Text>
                     </View>
                     <Text style={[
                       styles.deviceStatus,
-                      device.status === 'online' ? styles.statusOnlineText : styles.statusOfflineText
+                      device.isActive ? styles.statusOnlineText : styles.statusOfflineText
                     ]}>
-                      {device.status === 'online' ? 'En línea' : 'Desconectado'}
+                      {device.isActive ? 'En línea' : 'Desconectado'}
                     </Text>
                   </View>
                 </TouchableOpacity>
@@ -216,6 +245,16 @@ const styles = StyleSheet.create({
     color: 'rgba(255, 255, 255, 0.7)',
     marginTop: 8,
     textAlign: 'center',
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    marginTop: 15,
   },
   devicesGrid: {
     flexDirection: 'row',
