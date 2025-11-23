@@ -14,9 +14,9 @@ export default function Index() {
     );
   }
 
-  // Si está autenticado, ir a la app principal
+  // Si está autenticado, ir a la pantalla de dispositivos
   if (isAuthenticated) {
-    return <Redirect href="/(tabs)/alarm" />;
+    return <Redirect href="/(tabs)/devices" />;
   }
 
   // Si no está autenticado, ir al login

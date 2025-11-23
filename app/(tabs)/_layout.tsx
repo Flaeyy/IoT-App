@@ -17,10 +17,10 @@ export default function TabLayout() {
         tabBarButton: HapticTab,
       }}>
       <Tabs.Screen
-        name="alarm"
+        name="devices"
         options={{
-          title: 'Alarma',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="bell.fill" color={color} />,
+          title: 'Dispositivos',
+          tabBarIcon: ({ color }) => <IconSymbol size={28} name="cpu.fill" color={color} />,
         }}
       />
       <Tabs.Screen

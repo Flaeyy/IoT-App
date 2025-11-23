@@ -2,6 +2,7 @@ import { IconSymbol } from '@/components/ui/icon-symbol';
 import { LinearGradient } from 'expo-linear-gradient';
 import React, { useState } from 'react';
 import { StatusBar, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { router } from 'expo-router';
 
 type AlarmStatus = 'armed' | 'disarmed';
 
@@ -16,6 +17,10 @@ export default function AlarmScreen() {
     setStatus('disarmed');
   };
 
+  const handleBack = () => {
+    router.back();
+  };
+
   const isArmed = status === 'armed';
 
   return (
@@ -25,6 +30,14 @@ export default function AlarmScreen() {
       start={{ x: 0, y: 0 }}
       end={{ x: 0.5, y: 1 }}>
       <StatusBar barStyle="light-content" />
+      
+      <TouchableOpacity 
+        style={styles.backButton}
+        onPress={handleBack}
+        activeOpacity={0.7}
+      >
+        <IconSymbol name="chevron.left" size={32} color="#FFFFFF" />
+      </TouchableOpacity>
       
       <Text style={styles.title}>Alarma</Text>
 
@@ -69,6 +82,18 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingTop: 60,
     paddingBottom: 40,
+  },
+  backButton: {
+    position: 'absolute',
+    top: 50,
+    left: 20,
+    zIndex: 10,
+    width: 44,
+    height: 44,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.15)',
+    borderRadius: 22,
   },
   title: {
     fontSize: 40,

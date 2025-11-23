@@ -3,7 +3,7 @@ import { tokenStorage } from '../storage/tokenStorage';
 import { AppLogger } from '@/utils/logger';
 
 // URL base del backend - ajusta esto según tu configuración
-const API_BASE_URL = 'http://192.168.100.7:3000';
+const API_BASE_URL = 'http://192.168.2.142:3000';
 
 // Crear instancia de Axios
 const apiClient = axios.create({

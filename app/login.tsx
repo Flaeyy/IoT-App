@@ -26,7 +26,7 @@ export default function LoginScreen() {
   // Redirigir si ya está autenticado
   useEffect(() => {
     if (isAuthenticated) {
-      router.replace('/(tabs)/alarm');
+      router.replace('/(tabs)/devices');
     }
   }, [isAuthenticated]);
 
