@@ -3,12 +3,8 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import React, { useState } from 'react';
 import { Alert, ScrollView, StatusBar, StyleSheet, Switch, Text, TouchableOpacity, View } from 'react-native';
-<<<<<<< HEAD
-=======
-import { router } from 'expo-router';
 import { useAuth } from '@/hooks/auth/useAuth';
 import { AppLogger } from '@/utils/logger';
->>>>>>> 9ec0558caffdfebe3b685e587cacdb6d75c2ee08
 
 export default function SettingsScreen() {
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
