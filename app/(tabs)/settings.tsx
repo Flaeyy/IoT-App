@@ -124,6 +124,25 @@ export default function SettingsScreen() {
         </View>
 
         <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Dispositivos</Text>
+          
+          <TouchableOpacity 
+            style={styles.settingItem} 
+            activeOpacity={0.7}
+            onPress={() => router.push('/link-device')}
+          >
+            <View style={styles.settingLeft}>
+              <IconSymbol name="link.circle.fill" size={24} color="#FFFFFF" />
+              <View style={styles.settingTextContainer}>
+                <Text style={styles.settingTitle}>Vincular ESP32</Text>
+                <Text style={styles.settingDescription}>Conecta tu dispositivo SmartSecurity</Text>
+              </View>
+            </View>
+            <IconSymbol name="chevron.right" size={20} color="#FFFFFF" />
+          </TouchableOpacity>
+        </View>
+
+        <View style={styles.section}>
           <Text style={styles.sectionTitle}>Sistema</Text>
           
           <TouchableOpacity style={styles.settingItem} activeOpacity={0.7}>
