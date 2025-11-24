@@ -51,12 +51,11 @@ export default function DevicesScreen() {
   };
 
   const handleDevicePress = (device: DeviceResponse) => {
-    if (!device.isActive) {
-      Alert.alert('Dispositivo sin conexión', `${device.name || 'ESP32'} está desconectado`);
-    } else {
-      // Navegar a las pantallas de alarma/control del dispositivo
-      router.push('/alarm');
-    }
+    // Navegar a la pantalla de detalle del dispositivo
+    router.push({
+      pathname: '/device-detail',
+      params: { macAddress: device.macAddress },
+    });
   };
 
   if (isLoading) {

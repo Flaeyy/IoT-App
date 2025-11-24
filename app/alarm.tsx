@@ -1,20 +1,83 @@
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { LinearGradient } from 'expo-linear-gradient';
-import React, { useState } from 'react';
-import { StatusBar, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { StatusBar, StyleSheet, Text, TouchableOpacity, View, Alert, ActivityIndicator } from 'react-native';
 import { router } from 'expo-router';
+import { deviceService } from '@/services/devices/deviceService';
+import { AppLogger } from '@/utils/logger';
 
-type AlarmStatus = 'armed' | 'disarmed';
+type AlarmStatus = 'armed' | 'disarmed' | 'unknown';
 
 export default function AlarmScreen() {
-  const [status, setStatus] = useState<AlarmStatus>('disarmed');
+  const [status, setStatus] = useState<AlarmStatus>('unknown');
+  const [loading, setLoading] = useState<boolean>(false);
+  const [deviceMac, setDeviceMac] = useState<string | null>(null);
 
-  const handleArm = () => {
-    setStatus('armed');
+  useEffect(() => {
+    loadDevices();
+  }, []);
+
+  const loadDevices = async () => {
+    try {
+      const devices = await deviceService.getUserDevices();
+      if (devices.length > 0) {
+        // Usar el primer dispositivo activo
+        const activeDevice = devices.find(d => d.isActive) || devices[0];
+        setDeviceMac(activeDevice.macAddress);
+        setStatus('disarmed');
+        AppLogger.log('Dispositivo cargado', { mac: activeDevice.macAddress });
+      } else {
+        Alert.alert(
+          'Sin dispositivos',
+          'No tienes dispositivos registrados. Por favor, registra un dispositivo primero.',
+          [{ text: 'OK', onPress: () => router.back() }]
+        );
+      }
+    } catch (error) {
+      AppLogger.error('Error al cargar dispositivos', error);
+      Alert.alert('Error', 'No se pudieron cargar los dispositivos');
+    }
   };
 
-  const handleDisarm = () => {
-    setStatus('disarmed');
+  const handleArm = () => {
+    // La alarma se arma automáticamente cuando el PIR detecta movimiento
+    Alert.alert(
+      'Información',
+      'La alarma se activará automáticamente cuando el sensor PIR detecte movimiento en tu dispositivo ESP32.',
+      [{ text: 'Entendido' }]
+    );
+  };
+
+  const handleDisarm = async () => {
+    if (!deviceMac) {
+      Alert.alert('Error', 'No hay dispositivo seleccionado');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      AppLogger.log('Desactivando alarma', { mac: deviceMac });
+      const result = await deviceService.deactivateAlarm(deviceMac);
+      
+      if (result.success) {
+        setStatus('disarmed');
+        Alert.alert(
+          '✓ Alarma Desactivada',
+          'La alarma del buzzer ha sido desactivada exitosamente.',
+          [{ text: 'OK' }]
+        );
+        AppLogger.success('Alarma desactivada exitosamente');
+      }
+    } catch (error: any) {
+      AppLogger.error('Error al desactivar alarma', error);
+      Alert.alert(
+        'Error',
+        error.message || 'No se pudo desactivar la alarma. Verifica tu conexión.',
+        [{ text: 'OK' }]
+      );
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleBack = () => {
@@ -22,6 +85,7 @@ export default function AlarmScreen() {
   };
 
   const isArmed = status === 'armed';
+  const isUnknown = status === 'unknown';
 
   return (
     <LinearGradient
@@ -43,33 +107,49 @@ export default function AlarmScreen() {
 
       <View style={styles.statusContainer}>
         <View style={styles.shieldBackground}>
-          <IconSymbol 
-            name={isArmed ? "lock.shield.fill" : "checkmark.shield.fill"} 
-            size={90} 
-            color="#FFFFFF" 
-          />
+          {isUnknown ? (
+            <ActivityIndicator size="large" color="#FFFFFF" />
+          ) : (
+            <IconSymbol 
+              name={isArmed ? "lock.shield.fill" : "checkmark.shield.fill"} 
+              size={90} 
+              color="#FFFFFF" 
+            />
+          )}
         </View>
         
         <Text style={styles.statusText}>
-          {isArmed ? 'Encendida' : 'Apagada'}
+          {isUnknown ? 'Cargando...' : isArmed ? 'Encendida' : 'Apagada'}
         </Text>
+        
+        {deviceMac && (
+          <Text style={styles.deviceInfo}>
+            Dispositivo: {deviceMac}
+          </Text>
+        )}
       </View>
 
       <View style={styles.buttonsContainer}>
         <TouchableOpacity 
-          style={styles.button}
+          style={[styles.button, styles.infoButton]}
           onPress={handleArm}
           activeOpacity={0.7}
+          disabled={isUnknown}
         >
-          <Text style={styles.buttonText}>Encender</Text>
+          <Text style={styles.buttonText}>ℹ️ Info Alarma</Text>
         </TouchableOpacity>
 
         <TouchableOpacity 
-          style={styles.button}
+          style={[styles.button, loading && styles.buttonDisabled]}
           onPress={handleDisarm}
           activeOpacity={0.7}
+          disabled={loading || isUnknown}
         >
-          <Text style={styles.buttonText}>Apagar</Text>
+          {loading ? (
+            <ActivityIndicator color="#FFFFFF" />
+          ) : (
+            <Text style={styles.buttonText}>🔕 Desactivar Alarma</Text>
+          )}
         </TouchableOpacity>
       </View>
     </LinearGradient>
@@ -131,6 +211,13 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     letterSpacing: 0.5,
   },
+  deviceInfo: {
+    fontSize: 14,
+    fontWeight: '400',
+    color: 'rgba(255, 255, 255, 0.7)',
+    marginTop: 12,
+    letterSpacing: 0.3,
+  },
   buttonsContainer: {
     width: '100%',
     paddingHorizontal: 35,
@@ -157,5 +244,11 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#FFFFFF',
     letterSpacing: 0.5,
+  },
+  infoButton: {
+    backgroundColor: 'rgba(13, 122, 184, 0.6)',
+  },
+  buttonDisabled: {
+    opacity: 0.5,
   },
 });

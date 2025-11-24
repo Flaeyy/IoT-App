@@ -9,7 +9,10 @@
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "infoPlist": {
+        "UIBackgroundModes": ["remote-notification"]
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -38,9 +41,11 @@
         "ACCESS_COARSE_LOCATION",
         "android.permission.BLUETOOTH",
         "android.permission.BLUETOOTH_ADMIN",
-        "android.permission.BLUETOOTH_CONNECT"
+        "android.permission.BLUETOOTH_CONNECT",
+        "POST_NOTIFICATIONS"
       ],
-      "package": "com.anonymous.smartsecurityapp"
+      "package": "com.anonymous.smartsecurityapp",
+      "useNextNotificationsApi": true
     },
     "web": {
       "output": "static",
@@ -69,6 +74,14 @@
             "central"
           ],
           "bluetoothAlwaysPermission": "La aplicación necesita acceso a Bluetooth para conectarse a tu dispositivo SmartSecurity"
+        }
+      ],
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/images/icon.png",
+          "color": "#0D7AB8",
+          "androidMode": "default"
         }
       ]
     ],

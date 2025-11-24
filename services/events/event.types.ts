@@ -15,6 +15,7 @@ export interface Event {
   metadata: Record<string, any> | null;
   deviceMac: string;
   userId: string;
+  isAlarmActive: boolean;
   createdAt: string;
 }
 

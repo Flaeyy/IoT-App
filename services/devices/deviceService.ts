@@ -1,5 +1,6 @@
 import { apiClient } from '../api/axios.config';
 import { AppLogger } from '@/utils/logger';
+import { DeviceMode } from '../storage/deviceModeStorage';
 import type { DeviceResponse, RegisterDeviceDto } from './device.types';
 
 class DeviceService {
@@ -88,6 +89,41 @@ class DeviceService {
       AppLogger.success('Dispositivo eliminado');
     } catch (error: any) {
       AppLogger.error('Error al eliminar dispositivo', error.message);
+      throw this.handleError(error);
+    }
+  }
+
+  /**
+   * Desactiva la alarma de un dispositivo
+   */
+  async deactivateAlarm(macAddress: string): Promise<{ message: string; success: boolean }> {
+    try {
+      AppLogger.api('POST', `/devices/${macAddress}/deactivate-alarm`);
+      const response = await apiClient.post<{ message: string; success: boolean }>(
+        `/devices/${macAddress}/deactivate-alarm`
+      );
+      AppLogger.success('Alarma desactivada', response.data);
+      return response.data;
+    } catch (error: any) {
+      AppLogger.error('Error al desactivar alarma', error.message);
+      throw this.handleError(error);
+    }
+  }
+
+  /**
+   * Actualiza el modo de operación de un dispositivo
+   */
+  async updateDeviceMode(macAddress: string, mode: DeviceMode): Promise<{ message: string; mode: DeviceMode }> {
+    try {
+      AppLogger.api('PUT', `/devices/${macAddress}/mode`, { mode });
+      const response = await apiClient.put<{ message: string; mode: DeviceMode }>(
+        `/devices/${macAddress}/mode`,
+        { mode }
+      );
+      AppLogger.success('Modo del dispositivo actualizado', response.data);
+      return response.data;
+    } catch (error: any) {
+      AppLogger.error('Error al actualizar modo del dispositivo', error.message);
       throw this.handleError(error);
     }
   }
